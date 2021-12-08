@@ -8,3 +8,4 @@ version = "0.1.0"
 [dependencies]
 cliffy = {git = "https://github.com/AminMoazzen/cliffy"}
 image = "0.23.14"
+rand = "0.8.4"
