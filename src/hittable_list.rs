@@ -22,20 +22,19 @@ impl HittableList {
 }
 
 impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> (bool, Option<HitRecord>) {
+    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut temp_rec = None;
         let mut hit_anything = false;
         let mut closest_so_far = t_max;
 
         for object in &self.objects {
-            let (hit, hit_record) = object.hit(r, t_min, closest_so_far);
-            if hit {
+            if let Some(hit_record) = object.hit(r, t_min, closest_so_far) {
                 hit_anything = true;
-                closest_so_far = hit_record.as_ref().unwrap().t;
-                temp_rec = hit_record;
+                closest_so_far = hit_record.t;
+                temp_rec = Some(hit_record);
             }
         }
 
-        (hit_anything, temp_rec)
+        temp_rec
     }
 }

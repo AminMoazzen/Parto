@@ -3,26 +3,15 @@ mod hittable;
 mod hittable_list;
 mod ray;
 mod sphere;
+mod utilities;
 
 use camera::*;
 use cliffy::{Vec3, Vector};
 use hittable::Hittable;
 use hittable_list::HittableList;
 use image::{DynamicImage, GenericImage, Pixel};
-use rand::prelude::*;
 use ray::Ray;
 use sphere::Sphere;
-
-const RAND_MAX: f32 = 1.0;
-
-fn random() -> f32 {
-    let mut rng = StdRng::from_entropy();
-    rng.gen::<f32>() / (RAND_MAX + 1.0)
-}
-
-fn random_between(min: f32, max: f32) -> f32 {
-    min + (max - min) * random()
-}
 
 #[inline]
 fn clamp(x: f32, min: f32, max: f32) -> f32 {
@@ -37,11 +26,14 @@ fn clamp(x: f32, min: f32, max: f32) -> f32 {
     result
 }
 
-fn ray_color(r: &Ray, world: &dyn Hittable) -> Vec3 {
-    let (hit, rec) = world.hit(r, 0.0, f32::INFINITY);
-    if hit {
-        let hit_rec = rec.unwrap();
-        return 0.5 * (hit_rec.normal + Vec3::new(1.0, 1.0, 1.0));
+fn ray_color(r: &Ray, world: &dyn Hittable, depth: u32) -> Vec3 {
+    if depth == 0 {
+        return Vec3::zero();
+    }
+
+    if let Some(rec) = world.hit(r, 0.001, f32::INFINITY) {
+        let target = rec.point + utilities::random_in_hemisphere(&rec.normal);
+        return 0.5 * ray_color(&Ray::new(rec.point, target - rec.point), world, depth - 1);
     }
 
     let unit_direction = r.direction.normalized();
@@ -61,10 +53,11 @@ fn write_color(
     let mut g = pixel_color.y;
     let mut b = pixel_color.z;
 
+    // Divide the color by the number of samples and gamma-correct for gamma=2.0.
     let scale = 1.0 / samples_per_pixel as f32;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = (r * scale).sqrt();
+    g = (g * scale).sqrt();
+    b = (b * scale).sqrt();
 
     let ur = (256.0 * clamp(r, 0.0, 0.999)) as u8;
     let ug = (256.0 * clamp(g, 0.0, 0.999)) as u8;
@@ -80,6 +73,7 @@ fn main() {
     let image_width = 400;
     let image_height = (image_width as f32 / aspect_ratio) as u32;
     let samples_per_pixel = 100;
+    let max_depth = 50;
 
     let mut image = DynamicImage::new_rgb8(image_width, image_height);
 
@@ -100,10 +94,10 @@ fn main() {
         for i in 0..image_width {
             let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
             for _s in 0..samples_per_pixel {
-                let u = (i as f32 + random()) / (image_width - 1) as f32;
-                let v = (j as f32 + random()) / (image_height - 1) as f32;
+                let u = (i as f32 + utilities::random()) / (image_width - 1) as f32;
+                let v = (j as f32 + utilities::random()) / (image_height - 1) as f32;
                 let r = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &world);
+                pixel_color += ray_color(&r, &world, max_depth);
             }
 
             write_color(
@@ -113,10 +107,9 @@ fn main() {
                 &pixel_color,
                 samples_per_pixel,
             );
-
-            progress += 1;
         }
-        print!("\r {} / {}", progress, total_pixels);
+        progress += image_height;
+        print!("\r{} / {}", progress, total_pixels);
     }
     println!("");
 
