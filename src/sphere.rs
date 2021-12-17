@@ -1,16 +1,20 @@
-use crate::hittable::*;
-use crate::Ray;
-use cliffy::Vec3;
-use cliffy::Vector;
+use crate::{hittable::*, material::Material, Ray};
+use cliffy::*;
+use std::rc::Rc;
 
 pub struct Sphere {
     center: Vec3,
     radius: f32,
+    material: Rc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f32) -> Self {
-        Self { center, radius }
+    pub fn new(center: Vec3, radius: f32, material: Rc<dyn Material>) -> Self {
+        Self {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -39,7 +43,7 @@ impl Hittable for Sphere {
             }
         }
 
-        let mut rec = HitRecord::default();
+        let mut rec = HitRecord::with_mat_only(self.material.clone());
 
         rec.t = root;
         rec.point = r.at(rec.t);

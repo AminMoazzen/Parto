@@ -1,6 +1,9 @@
 mod camera;
 mod hittable;
 mod hittable_list;
+mod lambertian;
+mod material;
+mod metal;
 mod ray;
 mod sphere;
 mod utilities;
@@ -12,6 +15,9 @@ use hittable_list::HittableList;
 use image::{DynamicImage, GenericImage, Pixel};
 use ray::Ray;
 use sphere::Sphere;
+use std::rc::Rc;
+
+use crate::{lambertian::Lambertian, metal::Metal};
 
 #[inline]
 fn clamp(x: f32, min: f32, max: f32) -> f32 {
@@ -32,8 +38,15 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: u32) -> Vec3 {
     }
 
     if let Some(rec) = world.hit(r, 0.001, f32::INFINITY) {
-        let target = rec.point + utilities::random_in_hemisphere(&rec.normal);
-        return 0.5 * ray_color(&Ray::new(rec.point, target - rec.point), world, depth - 1);
+        let (is_scattered, attenuation, scattered) = rec.mat.scatter(r, &rec);
+        if is_scattered {
+            let ray_color = ray_color(&scattered, world, depth - 1);
+            let r = attenuation.x * ray_color.x;
+            let g = attenuation.y * ray_color.y;
+            let b = attenuation.z * ray_color.z;
+            return Vec3::new(r, g, b);
+        }
+        return Vec3::zero();
     }
 
     let unit_direction = r.direction.normalized();
@@ -79,8 +92,32 @@ fn main() {
 
     // World
     let mut world = HittableList::default();
-    world.add(Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)));
-    world.add(Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)));
+
+    let material_ground = Rc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0)));
+    let material_center = Rc::new(Lambertian::new(Vec3::new(0.7, 0.3, 0.3)));
+    let material_left = Rc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.3));
+    let material_right = Rc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), 1.0));
+
+    world.add(Box::new(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        material_ground.clone(),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        material_center.clone(),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        0.5,
+        material_left.clone(),
+    )));
+    world.add(Box::new(Sphere::new(
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        material_right.clone(),
+    )));
 
     // Camera
     let cam = Camera::new();

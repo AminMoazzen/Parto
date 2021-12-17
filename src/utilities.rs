@@ -52,3 +52,9 @@ pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         -in_unit_sphere
     }
 }
+
+#[inline]
+pub fn near_zero(vector: &Vec3) -> bool {
+    let s = 1e-8;
+    vector.x < s && vector.y < s && vector.z < s
+}
