@@ -66,3 +66,12 @@ pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f32) -> Vec3 {
 
     r_out_perp + r_out_parallel
 }
+
+pub fn random_in_disk() -> Vec3 {
+    loop {
+        let p = Vec3::new(random_between(-1.0, 1.0), random_between(-1.0, 1.0), 0.0);
+        if p.mag_sq() < 1.0 {
+            return p;
+        }
+    }
+}
