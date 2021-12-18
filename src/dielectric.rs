@@ -20,7 +20,7 @@ impl Dielectric {
 
 impl Material for Dielectric {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Vec3, Ray) {
-        let attenuation = Vec3::new(1.0, 1.0, 1.0);
+        let attenuation = Vec3::one();
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
@@ -35,7 +35,7 @@ impl Material for Dielectric {
         let direction;
 
         if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > utilities::random() {
-            direction = unit_direction.reflected(rec.normal);
+            direction = unit_direction.reflected_normal(rec.normal);
         } else {
             direction = utilities::refract(&unit_direction, &rec.normal, refraction_ratio);
         }
