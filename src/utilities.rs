@@ -1,12 +1,10 @@
 use cliffy::{Vec3, Vector};
 use rand::prelude::*;
 
-const RAND_MAX: f32 = 1.0;
-
 #[inline]
 pub fn random() -> f32 {
     let mut rng = StdRng::from_entropy();
-    rng.gen_range(0.0..1.0) //::<f32>() / (RAND_MAX + 1.0)
+    rng.gen_range(0.0..1.0)
 }
 
 #[inline]
