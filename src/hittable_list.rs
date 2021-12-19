@@ -2,11 +2,11 @@ use crate::{hittable::*, ray::Ray};
 
 #[derive(Default)]
 pub struct HittableList {
-    pub objects: Vec<Box<dyn Hittable>>,
+    pub objects: Vec<Hittable>,
 }
 
 impl HittableList {
-    pub fn new(object: Box<dyn Hittable>) -> Self {
+    pub fn new(object: Hittable) -> Self {
         Self {
             objects: vec![object],
         }
@@ -16,13 +16,11 @@ impl HittableList {
         self.objects.clear();
     }
 
-    pub fn add(&mut self, object: Box<dyn Hittable>) {
+    pub fn add(&mut self, object: Hittable) {
         self.objects.push(object);
     }
-}
 
-impl Hittable for HittableList {
-    fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+    pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let mut temp_rec = None;
         let mut closest_so_far = t_max;
 

@@ -33,7 +33,7 @@ fn clamp(x: f32, min: f32, max: f32) -> f32 {
     result
 }
 
-fn ray_color(r: &Ray, world: &dyn Hittable, depth: u32) -> Vec3 {
+fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Vec3 {
     if depth == 0 {
         return Vec3::zero();
     }
@@ -85,7 +85,7 @@ fn random_scene() -> HittableList {
     let mut world = HittableList::default();
 
     let ground_material = Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
-    world.add(Box::new(Sphere::new(
+    world.add(Hittable::Sphere(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_material.clone(),
@@ -108,7 +108,7 @@ fn random_scene() -> HittableList {
                     albedo.x *= random_albedo.x;
                     albedo.y *= random_albedo.y;
                     albedo.z *= random_albedo.z;
-                    world.add(Box::new(Sphere::new(
+                    world.add(Hittable::Sphere(Sphere::new(
                         center,
                         0.2,
                         Rc::new(Lambertian::new(albedo)),
@@ -117,14 +117,14 @@ fn random_scene() -> HittableList {
                     // metal
                     let albedo = utilities::random_vec3_between(0.5, 1.0);
                     let fuzz = utilities::random_between(0.0, 0.5);
-                    world.add(Box::new(Sphere::new(
+                    world.add(Hittable::Sphere(Sphere::new(
                         center,
                         0.2,
                         Rc::new(Metal::new(albedo, fuzz)),
                     )));
                 } else {
                     // glass
-                    world.add(Box::new(Sphere::new(
+                    world.add(Hittable::Sphere(Sphere::new(
                         center,
                         0.2,
                         Rc::new(Dielectric::new(1.5)),
@@ -135,21 +135,21 @@ fn random_scene() -> HittableList {
     }
 
     let material1 = Rc::new(Dielectric::new(1.5));
-    world.add(Box::new(Sphere::new(
+    world.add(Hittable::Sphere(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
     )));
 
     let material2 = Rc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1)));
-    world.add(Box::new(Sphere::new(
+    world.add(Hittable::Sphere(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     )));
 
     let material3 = Rc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Box::new(Sphere::new(
+    world.add(Hittable::Sphere(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
         material3,
@@ -161,10 +161,10 @@ fn random_scene() -> HittableList {
 fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 1280;
+    let image_width = 360;
     let image_height = (image_width as f32 / aspect_ratio) as u32;
-    let samples_per_pixel = 500;
-    let max_depth = 50;
+    let samples_per_pixel = 5;
+    let max_depth = 5;
 
     let mut image = DynamicImage::new_rgb8(image_width, image_height);
 
