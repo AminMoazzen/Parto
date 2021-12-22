@@ -40,7 +40,7 @@ impl Material for Dielectric {
             direction = utilities::refract(&unit_direction, &rec.normal, refraction_ratio);
         }
 
-        let scattered = Ray::new(rec.point, direction);
+        let scattered = Ray::with_time(rec.point, direction, r_in.time);
 
         (true, attenuation, scattered)
     }

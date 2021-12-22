@@ -5,6 +5,7 @@ mod hittable_list;
 mod lambertian;
 mod material;
 mod metal;
+mod moving_sphere;
 mod ray;
 mod sphere;
 mod utilities;
@@ -14,9 +15,11 @@ use cliffy::{Vec3, Vector};
 use hittable::Hittable;
 use hittable_list::HittableList;
 use image::{DynamicImage, GenericImage, Pixel};
+use moving_sphere::MovingSphere;
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
+use utilities::{random, random_between};
 
 use crate::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 
@@ -108,8 +111,12 @@ fn random_scene() -> HittableList {
                     albedo.x *= random_albedo.x;
                     albedo.y *= random_albedo.y;
                     albedo.z *= random_albedo.z;
-                    world.add(Hittable::Sphere(Sphere::new(
+                    let center2 = center + Vec3::new(0.0, random_between(0.0, 0.5), 0.0);
+                    world.add(Hittable::MovingSphere(MovingSphere::new(
                         center,
+                        center2,
+                        0.0,
+                        1.0,
                         0.2,
                         Rc::new(Lambertian::new(albedo)),
                     )));
@@ -161,10 +168,10 @@ fn random_scene() -> HittableList {
 fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 360;
+    let image_width = 400;
     let image_height = (image_width as f32 / aspect_ratio) as u32;
-    let samples_per_pixel = 5;
-    let max_depth = 5;
+    let samples_per_pixel = 100;
+    let max_depth = 50;
 
     let mut image = DynamicImage::new_rgb8(image_width, image_height);
 
@@ -178,7 +185,7 @@ fn main() {
     let dist_to_focus = 10.0;
     let aperture = 0.1;
 
-    let cam = Camera::new(
+    let cam = Camera::with_time(
         look_from,
         look_at,
         vup,
@@ -186,6 +193,8 @@ fn main() {
         aspect_ratio,
         aperture,
         dist_to_focus,
+        0.0,
+        1.0,
     );
 
     // Render

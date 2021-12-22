@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::{material::Material, sphere::Sphere, Ray};
+use crate::{material::Material, moving_sphere::MovingSphere, sphere::Sphere, Ray};
 use cliffy::*;
 
 pub struct HitRecord {
@@ -44,12 +44,14 @@ impl HitRecord {
 
 pub enum Hittable {
     Sphere(Sphere),
+    MovingSphere(MovingSphere),
 }
 
 impl Hittable {
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         match &self {
-            Hittable::Sphere(sphere) => sphere.hit(r, t_min, t_max),
+            Self::Sphere(s) => s.hit(r, t_min, t_max),
+            Hittable::MovingSphere(ms) => ms.hit(r, t_min, t_max),
         }
     }
 }
