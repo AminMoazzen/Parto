@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::{material::Material, moving_sphere::MovingSphere, sphere::Sphere, Ray};
+use crate::{
+    aabb::AABB, bvh_node::BVHNode, material::Material, moving_sphere::MovingSphere, sphere::Sphere,
+    Ray,
+};
 use cliffy::*;
 
 pub struct HitRecord {
@@ -45,6 +48,7 @@ impl HitRecord {
 pub enum Hittable {
     Sphere(Sphere),
     MovingSphere(MovingSphere),
+    Node(BVHNode),
 }
 
 impl Hittable {
@@ -52,6 +56,15 @@ impl Hittable {
         match &self {
             Self::Sphere(s) => s.hit(r, t_min, t_max),
             Hittable::MovingSphere(ms) => ms.hit(r, t_min, t_max),
+            Hittable::Node(n) => n.hit(r, t_min, t_max),
+        }
+    }
+
+    pub fn bounding_box(&self, time0: f32, time1: f32) -> Option<AABB> {
+        match &self {
+            Self::Sphere(s) => s.bounding_box(time0, time1),
+            Hittable::MovingSphere(ms) => ms.bounding_box(time0, time1),
+            Hittable::Node(n) => n.bounding_box(time0, time1),
         }
     }
 }

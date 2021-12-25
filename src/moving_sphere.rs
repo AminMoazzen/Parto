@@ -1,4 +1,4 @@
-use crate::{hittable::HitRecord, material::Material, ray::Ray};
+use crate::{aabb::AABB, hittable::HitRecord, material::Material, ray::Ray};
 use cliffy::{Vec3, Vector};
 use std::rc::Rc;
 
@@ -67,5 +67,19 @@ impl MovingSphere {
         rec.set_face_normal(r, &outward_normal);
 
         Some(rec)
+    }
+
+    pub fn bounding_box(&self, time0: f32, time1: f32) -> Option<AABB> {
+        let offset_by_radius = Vec3::new(self.radius, self.radius, self.radius);
+        let box0 = AABB {
+            min: self.center(self.time0) - offset_by_radius,
+            max: self.center(self.time0) + offset_by_radius,
+        };
+        let box1 = AABB {
+            min: self.center(self.time1) - offset_by_radius,
+            max: self.center(self.time1) + offset_by_radius,
+        };
+
+        Some(AABB::surrounding_box(box0, box1))
     }
 }

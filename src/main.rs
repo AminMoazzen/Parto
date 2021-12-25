@@ -1,3 +1,5 @@
+mod aabb;
+mod bvh_node;
 mod camera;
 mod dielectric;
 mod hittable;
@@ -85,14 +87,14 @@ fn write_color(
 }
 
 fn random_scene() -> HittableList {
-    let mut world = HittableList::default();
+    let mut world = HittableList::empty();
 
     let ground_material = Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
-    world.add(Hittable::Sphere(Sphere::new(
+    world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
         ground_material.clone(),
-    )));
+    ))));
 
     for a in -11..11 {
         for b in -11..11 {
@@ -112,55 +114,55 @@ fn random_scene() -> HittableList {
                     albedo.y *= random_albedo.y;
                     albedo.z *= random_albedo.z;
                     let center2 = center + Vec3::new(0.0, random_between(0.0, 0.5), 0.0);
-                    world.add(Hittable::MovingSphere(MovingSphere::new(
+                    world.add(Rc::new(Hittable::MovingSphere(MovingSphere::new(
                         center,
                         center2,
                         0.0,
                         1.0,
                         0.2,
                         Rc::new(Lambertian::new(albedo)),
-                    )));
+                    ))));
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = utilities::random_vec3_between(0.5, 1.0);
                     let fuzz = utilities::random_between(0.0, 0.5);
-                    world.add(Hittable::Sphere(Sphere::new(
+                    world.add(Rc::new(Hittable::Sphere(Sphere::new(
                         center,
                         0.2,
                         Rc::new(Metal::new(albedo, fuzz)),
-                    )));
+                    ))));
                 } else {
                     // glass
-                    world.add(Hittable::Sphere(Sphere::new(
+                    world.add(Rc::new(Hittable::Sphere(Sphere::new(
                         center,
                         0.2,
                         Rc::new(Dielectric::new(1.5)),
-                    )));
+                    ))));
                 }
             }
         }
     }
 
     let material1 = Rc::new(Dielectric::new(1.5));
-    world.add(Hittable::Sphere(Sphere::new(
+    world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
         material1,
-    )));
+    ))));
 
     let material2 = Rc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1)));
-    world.add(Hittable::Sphere(Sphere::new(
+    world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
-    )));
+    ))));
 
     let material3 = Rc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Hittable::Sphere(Sphere::new(
+    world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
         material3,
-    )));
+    ))));
 
     world
 }

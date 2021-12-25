@@ -1,4 +1,4 @@
-use crate::{hittable::*, material::Material, Ray};
+use crate::{aabb::AABB, hittable::*, material::Material, Ray};
 use cliffy::*;
 use std::rc::Rc;
 
@@ -49,5 +49,13 @@ impl Sphere {
         rec.set_face_normal(r, &outward_normal);
 
         Some(rec)
+    }
+
+    pub fn bounding_box(&self, time0: f32, time1: f32) -> Option<AABB> {
+        let offset_by_radius = Vec3::new(self.radius, self.radius, self.radius);
+        Some(AABB {
+            min: self.center - offset_by_radius,
+            max: self.center + offset_by_radius,
+        })
     }
 }
