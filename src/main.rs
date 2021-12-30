@@ -1,6 +1,7 @@
 mod aabb;
 mod bvh_node;
 mod camera;
+mod color;
 mod dielectric;
 mod hittable;
 mod hittable_list;
@@ -10,10 +11,12 @@ mod metal;
 mod moving_sphere;
 mod ray;
 mod sphere;
+mod texture;
 mod utilities;
 
 use camera::*;
 use cliffy::{Vec3, Vector};
+use color::Color;
 use hittable::Hittable;
 use hittable_list::HittableList;
 use image::{DynamicImage, GenericImage, Pixel};
@@ -21,7 +24,7 @@ use moving_sphere::MovingSphere;
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
-use utilities::{random, random_between};
+use utilities::random_between;
 
 use crate::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 
@@ -38,39 +41,36 @@ fn clamp(x: f32, min: f32, max: f32) -> f32 {
     result
 }
 
-fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Vec3 {
+fn ray_color(r: &Ray, world: &HittableList, depth: u32) -> Color {
     if depth == 0 {
-        return Vec3::zero();
+        return Color::black();
     }
 
     if let Some(rec) = world.hit(r, 0.001, f32::INFINITY) {
         let (is_scattered, attenuation, scattered) = rec.mat.scatter(r, &rec);
         if is_scattered {
             let ray_color = ray_color(&scattered, world, depth - 1);
-            let r = attenuation.x * ray_color.x;
-            let g = attenuation.y * ray_color.y;
-            let b = attenuation.z * ray_color.z;
-            return Vec3::new(r, g, b);
+            return attenuation * ray_color;
         }
-        return Vec3::zero();
+        return Color::black();
     }
 
     let unit_direction = r.direction.normalized();
     let t = 0.5 * (unit_direction.y + 1.0);
 
-    (1.0 - t) * Vec3::new(1.0, 1.0, 1.0) + t * Vec3::new(0.5, 0.7, 1.0)
+    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
 fn write_color(
     image: &mut DynamicImage,
     x: u32,
     y: u32,
-    pixel_color: &Vec3,
+    pixel_color: &Color,
     samples_per_pixel: u32,
 ) {
-    let mut r = pixel_color.x;
-    let mut g = pixel_color.y;
-    let mut b = pixel_color.z;
+    let mut r = pixel_color.r;
+    let mut g = pixel_color.g;
+    let mut b = pixel_color.b;
 
     // Divide the color by the number of samples and gamma-correct for gamma=2.0.
     let scale = 1.0 / samples_per_pixel as f32;
@@ -89,7 +89,7 @@ fn write_color(
 fn random_scene() -> HittableList {
     let mut world = HittableList::empty();
 
-    let ground_material = Rc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
+    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -108,11 +108,9 @@ fn random_scene() -> HittableList {
             if (center - Vec3::new(4.0, 0.2, 0.0)).mag() > 0.9 {
                 if choose_mat < 0.8 {
                     // diffuse
-                    let mut albedo = utilities::random_vec3();
-                    let random_albedo = utilities::random_vec3();
-                    albedo.x *= random_albedo.x;
-                    albedo.y *= random_albedo.y;
-                    albedo.z *= random_albedo.z;
+                    let mut albedo = utilities::random_color();
+                    let random_albedo = utilities::random_color();
+                    albedo *= random_albedo;
                     let center2 = center + Vec3::new(0.0, random_between(0.0, 0.5), 0.0);
                     world.add(Rc::new(Hittable::MovingSphere(MovingSphere::new(
                         center,
@@ -124,7 +122,7 @@ fn random_scene() -> HittableList {
                     ))));
                 } else if choose_mat < 0.95 {
                     // metal
-                    let albedo = utilities::random_vec3_between(0.5, 1.0);
+                    let albedo = utilities::random_color_between(0.5, 1.0);
                     let fuzz = utilities::random_between(0.0, 0.5);
                     world.add(Rc::new(Hittable::Sphere(Sphere::new(
                         center,
@@ -150,14 +148,14 @@ fn random_scene() -> HittableList {
         material1,
     ))));
 
-    let material2 = Rc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1)));
+    let material2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
         material2,
     ))));
 
-    let material3 = Rc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), 0.0));
+    let material3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
     world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(4.0, 1.0, 0.0),
         1.0,
@@ -202,7 +200,7 @@ fn main() {
     // Render
     for j in (0..image_height).rev() {
         for i in 0..image_width {
-            let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
+            let mut pixel_color = Color::black();
             for _s in 0..samples_per_pixel {
                 let u = (i as f32 + utilities::random()) / (image_width - 1) as f32;
                 let v = (j as f32 + utilities::random()) / (image_height - 1) as f32;

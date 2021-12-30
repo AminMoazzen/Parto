@@ -1,5 +1,5 @@
-use crate::{hittable::HitRecord, material::Material, ray::Ray, utilities};
-use cliffy::{Vec3, Vector};
+use crate::{color::Color, hittable::HitRecord, material::Material, ray::Ray, utilities};
+use cliffy::Vector;
 
 pub struct Dielectric {
     pub ir: f32, // Index of Refraction
@@ -19,8 +19,8 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Vec3, Ray) {
-        let attenuation = Vec3::one();
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Color, Ray) {
+        let attenuation = Color::white();
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {

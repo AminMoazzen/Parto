@@ -1,6 +1,8 @@
 use cliffy::{Vec3, Vector};
 use rand::prelude::*;
 
+use crate::color::Color;
+
 #[inline]
 pub fn random() -> f32 {
     let mut rng = StdRng::from_entropy();
@@ -20,6 +22,20 @@ pub fn random_vec3() -> Vec3 {
 #[inline]
 pub fn random_vec3_between(min: f32, max: f32) -> Vec3 {
     Vec3::new(
+        random_between(min, max),
+        random_between(min, max),
+        random_between(min, max),
+    )
+}
+
+#[inline]
+pub fn random_color() -> Color {
+    Color::new(random(), random(), random())
+}
+
+#[inline]
+pub fn random_color_between(min: f32, max: f32) -> Color {
+    Color::new(
         random_between(min, max),
         random_between(min, max),
         random_between(min, max),

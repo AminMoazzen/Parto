@@ -1,18 +1,17 @@
-use crate::{hittable::HitRecord, material::Material, ray::Ray, utilities};
-use cliffy::Vec3;
+use crate::{color::Color, hittable::HitRecord, material::Material, ray::Ray, utilities};
 
 pub struct Lambertian {
-    pub albedo: Vec3,
+    pub albedo: Color,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Self {
+    pub fn new(albedo: Color) -> Self {
         Self { albedo }
     }
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Vec3, Ray) {
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Color, Ray) {
         let mut scatter_direction = rec.normal + utilities::random_unit_vec3();
 
         // Catch degenerate scatter direction

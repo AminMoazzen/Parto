@@ -5,10 +5,7 @@ use crate::{
     ray::Ray,
 };
 use rand::prelude::*;
-use std::{
-    cmp::{self, Ordering},
-    rc::Rc,
-};
+use std::{cmp::Ordering, rc::Rc};
 
 pub struct BVHNode {
     pub left: Rc<Hittable>,
