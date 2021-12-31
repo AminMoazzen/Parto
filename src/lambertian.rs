@@ -1,12 +1,21 @@
-use crate::{color::Color, hittable::HitRecord, material::Material, ray::Ray, utilities};
+use crate::{
+    color::Color, hittable::HitRecord, material::Material, ray::Ray, texture::Texture, utilities,
+};
+use std::rc::Rc;
 
 pub struct Lambertian {
-    pub albedo: Color,
+    pub albedo: Rc<Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
+    pub fn new(albedo: Rc<Texture>) -> Self {
         Self { albedo }
+    }
+
+    pub fn with_color(c: Color) -> Self {
+        Self {
+            albedo: Rc::new(Texture::SolidColor(c)),
+        }
     }
 }
 
@@ -20,7 +29,7 @@ impl Material for Lambertian {
         }
 
         let scattered = Ray::with_time(rec.point, scatter_direction, r_in.time);
-        let attenuation = self.albedo;
+        let attenuation = self.albedo.value(rec.uv, &rec.point);
 
         (true, attenuation, scattered)
     }

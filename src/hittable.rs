@@ -1,16 +1,16 @@
-use std::rc::Rc;
-
 use crate::{
     aabb::AABB, bvh_node::BVHNode, material::Material, moving_sphere::MovingSphere, sphere::Sphere,
     Ray,
 };
-use cliffy::*;
+use cliffy::{Vec2, Vec3, Vector};
+use std::rc::Rc;
 
 pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
     pub mat: Rc<dyn Material>,
     pub t: f32,
+    pub uv: Vec2,
     pub front_face: bool,
 }
 
@@ -21,6 +21,7 @@ impl HitRecord {
             normal,
             mat,
             t,
+            uv: Vec2::zero(),
             front_face,
         }
     }
@@ -31,6 +32,7 @@ impl HitRecord {
             normal: Vec3::up(),
             mat,
             t: 0.0,
+            uv: Vec2::zero(),
             front_face: false,
         }
     }

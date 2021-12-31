@@ -14,6 +14,7 @@ mod sphere;
 mod texture;
 mod utilities;
 
+use crate::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 use camera::*;
 use cliffy::{Vec3, Vector};
 use color::Color;
@@ -24,9 +25,8 @@ use moving_sphere::MovingSphere;
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
+use texture::Texture;
 use utilities::random_between;
-
-use crate::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 
 #[inline]
 fn clamp(x: f32, min: f32, max: f32) -> f32 {
@@ -89,7 +89,13 @@ fn write_color(
 fn random_scene() -> HittableList {
     let mut world = HittableList::empty();
 
-    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let checker = Rc::new(Texture::Checker(
+        10.0,
+        Rc::new(Texture::SolidColor(Color::new(0.2, 0.3, 0.1))),
+        Rc::new(Texture::SolidColor(Color::new(0.9, 0.9, 0.9))),
+    ));
+
+    let ground_material = Rc::new(Lambertian::new(checker));
     world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -118,7 +124,7 @@ fn random_scene() -> HittableList {
                         0.0,
                         1.0,
                         0.2,
-                        Rc::new(Lambertian::new(albedo)),
+                        Rc::new(Lambertian::with_color(albedo)),
                     ))));
                 } else if choose_mat < 0.95 {
                     // metal
@@ -148,7 +154,7 @@ fn random_scene() -> HittableList {
         material1,
     ))));
 
-    let material2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material2 = Rc::new(Lambertian::with_color(Color::new(0.4, 0.2, 0.1)));
     world.add(Rc::new(Hittable::Sphere(Sphere::new(
         Vec3::new(-4.0, 1.0, 0.0),
         1.0,
@@ -165,6 +171,29 @@ fn random_scene() -> HittableList {
     world
 }
 
+fn two_spheres() -> HittableList {
+    let mut objects = HittableList::empty();
+
+    let checker = Rc::new(Texture::Checker(
+        10.0,
+        Rc::new(Texture::SolidColor(Color::new(0.2, 0.3, 0.1))),
+        Rc::new(Texture::SolidColor(Color::new(0.9, 0.9, 0.9))),
+    ));
+
+    objects.add(Rc::new(Hittable::Sphere(Sphere::new(
+        Vec3::new(0.0, -10.0, 0.0),
+        10.0,
+        Rc::new(Lambertian::new(checker.clone())),
+    ))));
+    objects.add(Rc::new(Hittable::Sphere(Sphere::new(
+        Vec3::new(0.0, 10.0, 0.0),
+        10.0,
+        Rc::new(Lambertian::new(checker.clone())),
+    ))));
+
+    objects
+}
+
 fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
@@ -176,20 +205,41 @@ fn main() {
     let mut image = DynamicImage::new_rgb8(image_width, image_height);
 
     // World
-    let world = random_scene();
+    let world;
+
+    let look_from;
+    let look_at;
+    let mut vfov = 40.0;
+    let mut aperture = 0.0;
+
+    let scene = 0;
+
+    match scene {
+        1 => {
+            world = random_scene();
+            look_from = Vec3::new(13.0, 2.0, 3.0);
+            look_at = Vec3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+            aperture = 0.1;
+        }
+
+        _ => {
+            world = two_spheres();
+            look_from = Vec3::new(13.0, 2.0, 3.0);
+            look_at = Vec3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        }
+    }
 
     // Camera
-    let look_from = Vec3::new(13.0, 2.0, 3.0);
-    let look_at = Vec3::new(0.0, 0.0, 0.0);
     let vup = Vec3::up();
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
 
     let cam = Camera::with_time(
         look_from,
         look_at,
         vup,
-        20.0,
+        vfov,
         aspect_ratio,
         aperture,
         dist_to_focus,
