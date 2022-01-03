@@ -70,8 +70,8 @@ impl Sphere {
 
         use std::f32::consts::PI;
 
-        let theta = -p.y.acos();
-        let phi = -p.z.atan2(p.x) + PI;
+        let theta = (-p.y).acos();
+        let phi = (-p.z).atan2(p.x) + PI;
 
         Vec2::new(phi / (2.0 * PI), theta / PI)
     }

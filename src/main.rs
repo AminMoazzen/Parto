@@ -214,6 +214,24 @@ fn two_perlin_spheres() -> HittableList {
     objects
 }
 
+fn earth() -> HittableList {
+    use image::io::Reader as ImageReader;
+    let earth_texture = Rc::new(Texture::Image(
+        ImageReader::open("res/earthmap.jpg")
+            .unwrap()
+            .decode()
+            .unwrap(),
+    ));
+    let earth_surface = Rc::new(Lambertian::new(earth_texture.clone()));
+    let globe = Rc::new(Hittable::Sphere(Sphere::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        2.0,
+        earth_surface.clone(),
+    )));
+
+    HittableList::new(globe)
+}
+
 fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
@@ -250,8 +268,15 @@ fn main() {
             vfov = 20.0;
         }
 
-        _ => {
+        3 => {
             world = two_perlin_spheres();
+            look_from = Vec3::new(13.0, 2.0, 3.0);
+            look_at = Vec3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        }
+
+        _ => {
+            world = earth();
             look_from = Vec3::new(13.0, 2.0, 3.0);
             look_at = Vec3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
