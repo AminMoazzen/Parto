@@ -34,7 +34,9 @@ impl Material for Dielectric {
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
         let direction;
 
-        if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > utilities::random() {
+        if cannot_refract
+            || Self::reflectance(cos_theta, refraction_ratio) > utilities::random_float()
+        {
             direction = unit_direction.reflected_normal(rec.normal);
         } else {
             direction = utilities::refract(&unit_direction, &rec.normal, refraction_ratio);

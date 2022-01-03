@@ -9,6 +9,7 @@ mod lambertian;
 mod material;
 mod metal;
 mod moving_sphere;
+mod perlin;
 mod ray;
 mod sphere;
 mod texture;
@@ -22,11 +23,12 @@ use hittable::Hittable;
 use hittable_list::HittableList;
 use image::{DynamicImage, GenericImage, Pixel};
 use moving_sphere::MovingSphere;
+use perlin::Perlin;
 use ray::Ray;
 use sphere::Sphere;
 use std::rc::Rc;
 use texture::Texture;
-use utilities::random_between;
+use utilities::random_float_between;
 
 #[inline]
 fn clamp(x: f32, min: f32, max: f32) -> f32 {
@@ -104,11 +106,11 @@ fn random_scene() -> HittableList {
 
     for a in -11..11 {
         for b in -11..11 {
-            let choose_mat = utilities::random();
+            let choose_mat = utilities::random_float();
             let center = Vec3::new(
-                a as f32 + 0.9 * utilities::random(),
+                a as f32 + 0.9 * utilities::random_float(),
                 0.2,
-                b as f32 + 0.9 * utilities::random(),
+                b as f32 + 0.9 * utilities::random_float(),
             );
 
             if (center - Vec3::new(4.0, 0.2, 0.0)).mag() > 0.9 {
@@ -117,7 +119,7 @@ fn random_scene() -> HittableList {
                     let mut albedo = utilities::random_color();
                     let random_albedo = utilities::random_color();
                     albedo *= random_albedo;
-                    let center2 = center + Vec3::new(0.0, random_between(0.0, 0.5), 0.0);
+                    let center2 = center + Vec3::new(0.0, random_float_between(0.0, 0.5), 0.0);
                     world.add(Rc::new(Hittable::MovingSphere(MovingSphere::new(
                         center,
                         center2,
@@ -129,7 +131,7 @@ fn random_scene() -> HittableList {
                 } else if choose_mat < 0.95 {
                     // metal
                     let albedo = utilities::random_color_between(0.5, 1.0);
-                    let fuzz = utilities::random_between(0.0, 0.5);
+                    let fuzz = utilities::random_float_between(0.0, 0.5);
                     world.add(Rc::new(Hittable::Sphere(Sphere::new(
                         center,
                         0.2,
@@ -194,6 +196,24 @@ fn two_spheres() -> HittableList {
     objects
 }
 
+fn two_perlin_spheres() -> HittableList {
+    let mut objects = HittableList::empty();
+
+    let per_text = Rc::new(Texture::Noise(4.0, Perlin::new()));
+    objects.add(Rc::new(Hittable::Sphere(Sphere::new(
+        Vec3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Rc::new(Lambertian::new(per_text.clone())),
+    ))));
+    objects.add(Rc::new(Hittable::Sphere(Sphere::new(
+        Vec3::new(0.0, 2.0, 0.0),
+        2.0,
+        Rc::new(Lambertian::new(per_text.clone())),
+    ))));
+
+    objects
+}
+
 fn main() {
     // Image
     let aspect_ratio = 16.0 / 9.0;
@@ -223,8 +243,15 @@ fn main() {
             aperture = 0.1;
         }
 
-        _ => {
+        2 => {
             world = two_spheres();
+            look_from = Vec3::new(13.0, 2.0, 3.0);
+            look_at = Vec3::new(0.0, 0.0, 0.0);
+            vfov = 20.0;
+        }
+
+        _ => {
+            world = two_perlin_spheres();
             look_from = Vec3::new(13.0, 2.0, 3.0);
             look_at = Vec3::new(0.0, 0.0, 0.0);
             vfov = 20.0;
@@ -252,8 +279,8 @@ fn main() {
         for i in 0..image_width {
             let mut pixel_color = Color::black();
             for _s in 0..samples_per_pixel {
-                let u = (i as f32 + utilities::random()) / (image_width - 1) as f32;
-                let v = (j as f32 + utilities::random()) / (image_height - 1) as f32;
+                let u = (i as f32 + utilities::random_float()) / (image_width - 1) as f32;
+                let v = (j as f32 + utilities::random_float()) / (image_height - 1) as f32;
                 let r = cam.get_ray(u, v);
                 pixel_color += ray_color(&r, &world, max_depth);
             }

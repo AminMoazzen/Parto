@@ -3,8 +3,8 @@ use crate::{
     hittable::{HitRecord, Hittable},
     hittable_list::HittableList,
     ray::Ray,
+    utilities,
 };
-use rand::prelude::*;
 use std::{cmp::Ordering, rc::Rc};
 
 pub struct BVHNode {
@@ -28,7 +28,7 @@ impl BVHNode {
     ) -> Self {
         let mut objects = src_objects;
 
-        let axis = rand::thread_rng().gen_range(0..=2);
+        let axis = utilities::random_int(0, 2);
         let comparator = match axis {
             0 => box_x_compare,
             1 => box_y_compare,

@@ -1,10 +1,14 @@
-use crate::color::Color;
+use crate::{
+    color::Color,
+    perlin::{self, Perlin},
+};
 use cliffy::{Vec2, Vec3};
 use std::rc::Rc;
 
 pub enum Texture {
     SolidColor(Color),
     Checker(f32, Rc<Texture>, Rc<Texture>),
+    Noise(f32, Perlin),
 }
 
 impl Texture {
@@ -18,6 +22,10 @@ impl Texture {
                 } else {
                     even.value(uv, p)
                 }
+            }
+            Self::Noise(scale, perlin) => {
+                // Color::white() * 0.5 * (1.0 + perlin.noise(&(*scale * *p)))
+                Color::white() * 0.5 * (1.0 + (scale * p.z + 10.0 * perlin.turb(p, 7)).sin())
             }
         }
     }

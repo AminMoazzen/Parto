@@ -86,7 +86,7 @@ impl Camera {
         Ray::with_time(
             self.origin + offset,
             self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin - offset,
-            utilities::random_between(self.time_0, self.time_1),
+            utilities::random_float_between(self.time_0, self.time_1),
         )
     }
 }
