@@ -31,4 +31,8 @@ impl Material for Metal {
             scattered,
         )
     }
+
+    fn emitted(&self, uv: &cliffy::Vec2, p: &cliffy::Vec3) -> Color {
+        Color::black()
+    }
 }

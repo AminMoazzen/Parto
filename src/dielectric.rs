@@ -46,4 +46,8 @@ impl Material for Dielectric {
 
         (true, attenuation, scattered)
     }
+
+    fn emitted(&self, uv: &cliffy::Vec2, p: &cliffy::Vec3) -> Color {
+        Color::black()
+    }
 }

@@ -29,8 +29,12 @@ impl Material for Lambertian {
         }
 
         let scattered = Ray::with_time(rec.point, scatter_direction, r_in.time);
-        let attenuation = self.albedo.value(rec.uv, &rec.point);
+        let attenuation = self.albedo.value(&rec.uv, &rec.point);
 
         (true, attenuation, scattered)
+    }
+
+    fn emitted(&self, uv: &cliffy::Vec2, p: &cliffy::Vec3) -> Color {
+        Color::black()
     }
 }

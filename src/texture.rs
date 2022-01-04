@@ -14,7 +14,7 @@ pub enum Texture {
 }
 
 impl Texture {
-    pub fn value(&self, uv: Vec2, p: &Vec3) -> Color {
+    pub fn value(&self, uv: &Vec2, p: &Vec3) -> Color {
         match self {
             Self::SolidColor(c) => *c,
             Self::Checker(size, even, odd) => {

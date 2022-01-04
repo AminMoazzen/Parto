@@ -1,5 +1,10 @@
 use crate::{
-    aabb::AABB, bvh_node::BVHNode, material::Material, moving_sphere::MovingSphere, sphere::Sphere,
+    aabb::AABB,
+    bvh_node::BVHNode,
+    material::Material,
+    moving_sphere::MovingSphere,
+    rect::{XYRect, XZRect, YZRect},
+    sphere::Sphere,
     Ray,
 };
 use cliffy::{Vec2, Vec3, Vector};
@@ -51,6 +56,9 @@ pub enum Hittable {
     Sphere(Sphere),
     MovingSphere(MovingSphere),
     Node(BVHNode),
+    XYRect(XYRect),
+    XZRect(XZRect),
+    YZRect(YZRect),
 }
 
 impl Hittable {
@@ -59,6 +67,9 @@ impl Hittable {
             Self::Sphere(s) => s.hit(r, t_min, t_max),
             Hittable::MovingSphere(ms) => ms.hit(r, t_min, t_max),
             Hittable::Node(n) => n.hit(r, t_min, t_max),
+            Hittable::XYRect(rect) => rect.hit(r, t_min, t_max),
+            Hittable::XZRect(rect) => rect.hit(r, t_min, t_max),
+            Hittable::YZRect(rect) => rect.hit(r, t_min, t_max),
         }
     }
 
@@ -67,6 +78,9 @@ impl Hittable {
             Self::Sphere(s) => s.bounding_box(time0, time1),
             Hittable::MovingSphere(ms) => ms.bounding_box(time0, time1),
             Hittable::Node(n) => n.bounding_box(time0, time1),
+            Hittable::XYRect(rect) => rect.bounding_box(time0, time1),
+            Hittable::XZRect(rect) => rect.bounding_box(time0, time1),
+            Hittable::YZRect(rect) => rect.bounding_box(time0, time1),
         }
     }
 }
