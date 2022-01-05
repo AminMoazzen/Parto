@@ -4,11 +4,11 @@ use crate::{aabb::AABB, hittable::HitRecord, material::Material, ray::Ray};
 use std::rc::Rc;
 
 pub struct XYRect {
-    mp: Rc<dyn Material>,
-    x0: f32,
-    x1: f32,
-    y0: f32,
-    y1: f32,
+    pub mp: Rc<dyn Material>,
+    pub x0: f32,
+    pub x1: f32,
+    pub y0: f32,
+    pub y1: f32,
     k: f32,
 }
 
@@ -23,6 +23,7 @@ impl XYRect {
             k,
         }
     }
+
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - r.origin.z) / r.direction.z;
         if t < t_min || t > t_max {
@@ -62,11 +63,11 @@ impl XYRect {
 }
 
 pub struct XZRect {
-    mp: Rc<dyn Material>,
-    x0: f32,
-    x1: f32,
-    z0: f32,
-    z1: f32,
+    pub mp: Rc<dyn Material>,
+    pub x0: f32,
+    pub x1: f32,
+    pub z0: f32,
+    pub z1: f32,
     k: f32,
 }
 
@@ -81,6 +82,7 @@ impl XZRect {
             k,
         }
     }
+
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - r.origin.y) / r.direction.y;
         if t < t_min || t > t_max {
@@ -120,11 +122,11 @@ impl XZRect {
 }
 
 pub struct YZRect {
-    mp: Rc<dyn Material>,
-    y0: f32,
-    y1: f32,
-    z0: f32,
-    z1: f32,
+    pub mp: Rc<dyn Material>,
+    pub y0: f32,
+    pub y1: f32,
+    pub z0: f32,
+    pub z1: f32,
     k: f32,
 }
 
@@ -139,6 +141,7 @@ impl YZRect {
             k,
         }
     }
+
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let t = (self.k - r.origin.x) / r.direction.x;
         if t < t_min || t > t_max {

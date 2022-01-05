@@ -1,10 +1,13 @@
 use crate::{
     aabb::AABB,
     bvh_node::BVHNode,
+    geo_box::GeoBox,
     material::Material,
     moving_sphere::MovingSphere,
     rect::{XYRect, XZRect, YZRect},
+    rotate::RotateY,
     sphere::Sphere,
+    translate::Translate,
     Ray,
 };
 use cliffy::{Vec2, Vec3, Vector};
@@ -59,6 +62,9 @@ pub enum Hittable {
     XYRect(XYRect),
     XZRect(XZRect),
     YZRect(YZRect),
+    Box(GeoBox),
+    Translate(Translate),
+    RotateY(RotateY),
 }
 
 impl Hittable {
@@ -70,6 +76,9 @@ impl Hittable {
             Hittable::XYRect(rect) => rect.hit(r, t_min, t_max),
             Hittable::XZRect(rect) => rect.hit(r, t_min, t_max),
             Hittable::YZRect(rect) => rect.hit(r, t_min, t_max),
+            Hittable::Box(geo_box) => geo_box.hit(r, t_min, t_max),
+            Hittable::Translate(trans) => trans.hit(r, t_min, t_max),
+            Hittable::RotateY(rot) => rot.hit(r, t_min, t_max),
         }
     }
 
@@ -81,6 +90,9 @@ impl Hittable {
             Hittable::XYRect(rect) => rect.bounding_box(time0, time1),
             Hittable::XZRect(rect) => rect.bounding_box(time0, time1),
             Hittable::YZRect(rect) => rect.bounding_box(time0, time1),
+            Hittable::Box(geo_box) => geo_box.bounding_box(time0, time1),
+            Hittable::Translate(trans) => trans.bounding_box(time0, time1),
+            Hittable::RotateY(rot) => rot.bounding_box(time0, time1),
         }
     }
 }

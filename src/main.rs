@@ -4,6 +4,7 @@ mod camera;
 mod color;
 mod dielectric;
 mod diffuse_light;
+mod geo_box;
 mod hittable;
 mod hittable_list;
 mod lambertian;
@@ -13,8 +14,10 @@ mod moving_sphere;
 mod perlin;
 mod ray;
 mod rect;
+mod rotate;
 mod sphere;
 mod texture;
+mod translate;
 mod utilities;
 
 use crate::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
@@ -22,6 +25,7 @@ use camera::*;
 use cliffy::{Vec3, Vector};
 use color::Color;
 use diffuse_light::DiffuseLight;
+use geo_box::GeoBox;
 use hittable::Hittable;
 use hittable_list::HittableList;
 use image::{DynamicImage, GenericImage, Pixel};
@@ -29,9 +33,11 @@ use moving_sphere::MovingSphere;
 use perlin::Perlin;
 use ray::Ray;
 use rect::{XYRect, XZRect, YZRect};
+use rotate::RotateY;
 use sphere::Sphere;
 use std::rc::Rc;
 use texture::Texture;
+use translate::Translate;
 use utilities::random_float_between;
 
 #[inline]
@@ -333,6 +339,30 @@ fn cornell_box() -> HittableList {
         555.0,
         555.0,
     ))));
+
+    let mut box1 = Rc::new(Hittable::Box(GeoBox::new(
+        &Vec3::new(0.0, 0.0, 0.0),
+        &Vec3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    )));
+    box1 = Rc::new(Hittable::RotateY(RotateY::new(box1, 15.0)));
+    box1 = Rc::new(Hittable::Translate(Translate::new(
+        box1,
+        Vec3::new(265.0, 0.0, 295.0),
+    )));
+    objects.add(box1);
+
+    let mut box2 = Rc::new(Hittable::Box(GeoBox::new(
+        &Vec3::new(0.0, 0.0, 0.0),
+        &Vec3::new(165.0, 165.0, 165.0),
+        white.clone(),
+    )));
+    box2 = Rc::new(Hittable::RotateY(RotateY::new(box2, -18.0)));
+    box2 = Rc::new(Hittable::Translate(Translate::new(
+        box2,
+        Vec3::new(130.0, 0.0, 65.0),
+    )));
+    objects.add(box2);
 
     objects
 }
