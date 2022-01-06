@@ -2,11 +2,13 @@ mod aabb;
 mod bvh_node;
 mod camera;
 mod color;
+mod constant_medium;
 mod dielectric;
 mod diffuse_light;
 mod geo_box;
 mod hittable;
 mod hittable_list;
+mod isotropic;
 mod lambertian;
 mod material;
 mod metal;
@@ -24,6 +26,7 @@ use crate::{dielectric::Dielectric, lambertian::Lambertian, metal::Metal};
 use camera::*;
 use cliffy::{Vec3, Vector};
 use color::Color;
+use constant_medium::ConstantMedium;
 use diffuse_light::DiffuseLight;
 use geo_box::GeoBox;
 use hittable::Hittable;
@@ -367,6 +370,103 @@ fn cornell_box() -> HittableList {
     objects
 }
 
+fn cornell_smoke() -> HittableList {
+    let mut objects = HittableList::empty();
+
+    let red = Rc::new(Lambertian::new(Rc::new(Texture::SolidColor(Color::new(
+        0.65, 0.05, 0.05,
+    )))));
+    let white = Rc::new(Lambertian::new(Rc::new(Texture::SolidColor(Color::new(
+        0.73, 0.73, 0.73,
+    )))));
+    let green = Rc::new(Lambertian::new(Rc::new(Texture::SolidColor(Color::new(
+        0.12, 0.45, 0.15,
+    )))));
+    let light = Rc::new(DiffuseLight::new(Rc::new(Texture::SolidColor(Color::new(
+        15.0, 15.0, 15.0,
+    )))));
+
+    objects.add(Rc::new(Hittable::YZRect(YZRect::new(
+        green.clone(),
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+    ))));
+    objects.add(Rc::new(Hittable::YZRect(YZRect::new(
+        red.clone(),
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+    ))));
+    objects.add(Rc::new(Hittable::XZRect(XZRect::new(
+        light.clone(),
+        213.0,
+        343.0,
+        227.0,
+        332.0,
+        554.0,
+    ))));
+    objects.add(Rc::new(Hittable::XZRect(XZRect::new(
+        white.clone(),
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+    ))));
+    objects.add(Rc::new(Hittable::XZRect(XZRect::new(
+        white.clone(),
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+    ))));
+    objects.add(Rc::new(Hittable::XYRect(XYRect::new(
+        white.clone(),
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+    ))));
+
+    let mut box1 = Rc::new(Hittable::Box(GeoBox::new(
+        &Vec3::new(0.0, 0.0, 0.0),
+        &Vec3::new(165.0, 330.0, 165.0),
+        white.clone(),
+    )));
+    box1 = Rc::new(Hittable::RotateY(RotateY::new(box1, 15.0)));
+    box1 = Rc::new(Hittable::Translate(Translate::new(
+        box1,
+        Vec3::new(265.0, 0.0, 295.0),
+    )));
+
+    let mut box2 = Rc::new(Hittable::Box(GeoBox::new(
+        &Vec3::new(0.0, 0.0, 0.0),
+        &Vec3::new(165.0, 165.0, 165.0),
+        white.clone(),
+    )));
+    box2 = Rc::new(Hittable::RotateY(RotateY::new(box2, -18.0)));
+    box2 = Rc::new(Hittable::Translate(Translate::new(
+        box2,
+        Vec3::new(130.0, 0.0, 65.0),
+    )));
+
+    objects.add(Rc::new(Hittable::ConstantMedium(
+        ConstantMedium::with_color(box1, 0.01, Color::black()),
+    )));
+    objects.add(Rc::new(Hittable::ConstantMedium(
+        ConstantMedium::with_color(box2, 0.01, Color::white()),
+    )));
+
+    objects
+}
+
 fn main() {
     // Image
     let mut aspect_ratio = 16.0 / 9.0;
@@ -428,8 +528,19 @@ fn main() {
             vfov = 20.0;
         }
 
-        _ => {
+        6 => {
             world = cornell_box();
+            aspect_ratio = 1.0;
+            image_width = 600;
+            samples_per_pixel = 200;
+            background = Color::black();
+            look_from = Vec3::new(278.0, 278.0, -800.0);
+            look_at = Vec3::new(278.0, 278.0, 0.0);
+            vfov = 40.0;
+        }
+
+        _ => {
+            world = cornell_smoke();
             aspect_ratio = 1.0;
             image_width = 600;
             samples_per_pixel = 200;

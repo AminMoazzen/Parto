@@ -1,6 +1,7 @@
 use crate::{
     aabb::AABB,
     bvh_node::BVHNode,
+    constant_medium::ConstantMedium,
     geo_box::GeoBox,
     material::Material,
     moving_sphere::MovingSphere,
@@ -65,6 +66,7 @@ pub enum Hittable {
     Box(GeoBox),
     Translate(Translate),
     RotateY(RotateY),
+    ConstantMedium(ConstantMedium),
 }
 
 impl Hittable {
@@ -79,6 +81,7 @@ impl Hittable {
             Hittable::Box(geo_box) => geo_box.hit(r, t_min, t_max),
             Hittable::Translate(trans) => trans.hit(r, t_min, t_max),
             Hittable::RotateY(rot) => rot.hit(r, t_min, t_max),
+            Hittable::ConstantMedium(med) => med.hit(r, t_min, t_max),
         }
     }
 
@@ -93,6 +96,7 @@ impl Hittable {
             Hittable::Box(geo_box) => geo_box.bounding_box(time0, time1),
             Hittable::Translate(trans) => trans.bounding_box(time0, time1),
             Hittable::RotateY(rot) => rot.bounding_box(time0, time1),
+            Hittable::ConstantMedium(med) => med.bounding_box(time0, time1),
         }
     }
 }
