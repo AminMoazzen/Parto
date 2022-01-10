@@ -1,13 +1,15 @@
+use cliffy::{Vec2, Vec3};
+
 use crate::{
     color::Color, hittable::HitRecord, material::Material, ray::Ray, texture::Texture, utilities,
 };
 use std::rc::Rc;
 
-pub struct Lambertian {
+pub struct Isotropic {
     pub albedo: Rc<Texture>,
 }
 
-impl Lambertian {
+impl Isotropic {
     pub fn new(albedo: Rc<Texture>) -> Self {
         Self { albedo }
     }
@@ -19,22 +21,15 @@ impl Lambertian {
     }
 }
 
-impl Material for Lambertian {
+impl Material for Isotropic {
     fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Color, Ray) {
-        let mut scatter_direction = rec.normal + utilities::random_unit_vec3();
-
-        // Catch degenerate scatter direction
-        if utilities::near_zero(&scatter_direction) {
-            scatter_direction = rec.normal;
-        }
-
-        let scattered = Ray::with_time(rec.point, scatter_direction, r_in.time);
+        let scattered = Ray::with_time(rec.point, utilities::random_in_sphere(), r_in.time);
         let attenuation = self.albedo.value(&rec.uv, &rec.point);
 
         (true, attenuation, scattered)
     }
 
-    fn emitted(&self, uv: &cliffy::Vec2, p: &cliffy::Vec3) -> Color {
+    fn emitted(&self, uv: &Vec2, p: &Vec3) -> Color {
         Color::black()
     }
 }

@@ -1,5 +1,5 @@
-use crate::{hittable::HitRecord, material::Material, ray::Ray, utilities};
-use cliffy::{Vec3, Vector};
+use crate::{color::Color, hittable::HitRecord, material::Material, ray::Ray, utilities};
+use cliffy::Vector;
 
 pub struct Dielectric {
     pub ir: f32, // Index of Refraction
@@ -19,8 +19,8 @@ impl Dielectric {
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Vec3, Ray) {
-        let attenuation = Vec3::one();
+    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> (bool, Color, Ray) {
+        let attenuation = Color::white();
         let refraction_ratio = if rec.front_face {
             1.0 / self.ir
         } else {
@@ -34,14 +34,20 @@ impl Material for Dielectric {
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
         let direction;
 
-        if cannot_refract || Self::reflectance(cos_theta, refraction_ratio) > utilities::random() {
+        if cannot_refract
+            || Self::reflectance(cos_theta, refraction_ratio) > utilities::random_float()
+        {
             direction = unit_direction.reflected_normal(rec.normal);
         } else {
             direction = utilities::refract(&unit_direction, &rec.normal, refraction_ratio);
         }
 
-        let scattered = Ray::new(rec.point, direction);
+        let scattered = Ray::with_time(rec.point, direction, r_in.time);
 
         (true, attenuation, scattered)
+    }
+
+    fn emitted(&self, uv: &cliffy::Vec2, p: &cliffy::Vec3) -> Color {
+        Color::black()
     }
 }

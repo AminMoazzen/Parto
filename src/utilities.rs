@@ -1,28 +1,49 @@
 use cliffy::{Vec3, Vector};
 use rand::prelude::*;
 
+use crate::color::Color;
+
 #[inline]
-pub fn random() -> f32 {
+pub fn random_float() -> f32 {
     let mut rng = StdRng::from_entropy();
     rng.gen_range(0.0..1.0)
 }
 
 #[inline]
-pub fn random_between(min: f32, max: f32) -> f32 {
-    min + (max - min) * random()
+pub fn random_float_between(min: f32, max: f32) -> f32 {
+    min + (max - min) * random_float()
+}
+
+#[inline]
+pub fn random_int(min: i32, max: i32) -> i32 {
+    rand::thread_rng().gen_range(min..=max)
 }
 
 #[inline]
 pub fn random_vec3() -> Vec3 {
-    Vec3::new(random(), random(), random())
+    Vec3::new(random_float(), random_float(), random_float())
 }
 
 #[inline]
 pub fn random_vec3_between(min: f32, max: f32) -> Vec3 {
     Vec3::new(
-        random_between(min, max),
-        random_between(min, max),
-        random_between(min, max),
+        random_float_between(min, max),
+        random_float_between(min, max),
+        random_float_between(min, max),
+    )
+}
+
+#[inline]
+pub fn random_color() -> Color {
+    Color::new(random_float(), random_float(), random_float())
+}
+
+#[inline]
+pub fn random_color_between(min: f32, max: f32) -> Color {
+    Color::new(
+        random_float_between(min, max),
+        random_float_between(min, max),
+        random_float_between(min, max),
     )
 }
 
@@ -67,7 +88,11 @@ pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f32) -> Vec3 {
 
 pub fn random_in_disk() -> Vec3 {
     loop {
-        let p = Vec3::new(random_between(-1.0, 1.0), random_between(-1.0, 1.0), 0.0);
+        let p = Vec3::new(
+            random_float_between(-1.0, 1.0),
+            random_float_between(-1.0, 1.0),
+            0.0,
+        );
         if p.mag_sq() < 1.0 {
             return p;
         }

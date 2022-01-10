@@ -1,13 +1,25 @@
+use crate::{
+    aabb::AABB,
+    bvh_node::BVHNode,
+    constant_medium::ConstantMedium,
+    geo_box::GeoBox,
+    material::Material,
+    moving_sphere::MovingSphere,
+    rect::{XYRect, XZRect, YZRect},
+    rotate::RotateY,
+    sphere::Sphere,
+    translate::Translate,
+    Ray,
+};
+use cliffy::{Vec2, Vec3, Vector};
 use std::rc::Rc;
-
-use crate::{material::Material, sphere::Sphere, Ray};
-use cliffy::*;
 
 pub struct HitRecord {
     pub point: Vec3,
     pub normal: Vec3,
     pub mat: Rc<dyn Material>,
     pub t: f32,
+    pub uv: Vec2,
     pub front_face: bool,
 }
 
@@ -18,6 +30,7 @@ impl HitRecord {
             normal,
             mat,
             t,
+            uv: Vec2::zero(),
             front_face,
         }
     }
@@ -28,6 +41,7 @@ impl HitRecord {
             normal: Vec3::up(),
             mat,
             t: 0.0,
+            uv: Vec2::zero(),
             front_face: false,
         }
     }
@@ -44,12 +58,45 @@ impl HitRecord {
 
 pub enum Hittable {
     Sphere(Sphere),
+    MovingSphere(MovingSphere),
+    Node(BVHNode),
+    XYRect(XYRect),
+    XZRect(XZRect),
+    YZRect(YZRect),
+    Box(GeoBox),
+    Translate(Translate),
+    RotateY(RotateY),
+    ConstantMedium(ConstantMedium),
 }
 
 impl Hittable {
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         match &self {
-            Hittable::Sphere(sphere) => sphere.hit(r, t_min, t_max),
+            Self::Sphere(s) => s.hit(r, t_min, t_max),
+            Hittable::MovingSphere(ms) => ms.hit(r, t_min, t_max),
+            Hittable::Node(n) => n.hit(r, t_min, t_max),
+            Hittable::XYRect(rect) => rect.hit(r, t_min, t_max),
+            Hittable::XZRect(rect) => rect.hit(r, t_min, t_max),
+            Hittable::YZRect(rect) => rect.hit(r, t_min, t_max),
+            Hittable::Box(geo_box) => geo_box.hit(r, t_min, t_max),
+            Hittable::Translate(trans) => trans.hit(r, t_min, t_max),
+            Hittable::RotateY(rot) => rot.hit(r, t_min, t_max),
+            Hittable::ConstantMedium(med) => med.hit(r, t_min, t_max),
+        }
+    }
+
+    pub fn bounding_box(&self, time0: f32, time1: f32) -> Option<AABB> {
+        match &self {
+            Self::Sphere(s) => s.bounding_box(time0, time1),
+            Hittable::MovingSphere(ms) => ms.bounding_box(time0, time1),
+            Hittable::Node(n) => n.bounding_box(time0, time1),
+            Hittable::XYRect(rect) => rect.bounding_box(time0, time1),
+            Hittable::XZRect(rect) => rect.bounding_box(time0, time1),
+            Hittable::YZRect(rect) => rect.bounding_box(time0, time1),
+            Hittable::Box(geo_box) => geo_box.bounding_box(time0, time1),
+            Hittable::Translate(trans) => trans.bounding_box(time0, time1),
+            Hittable::RotateY(rot) => rot.bounding_box(time0, time1),
+            Hittable::ConstantMedium(med) => med.bounding_box(time0, time1),
         }
     }
 }

@@ -11,6 +11,9 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
     lens_radius: f32,
+    // shutter open/close times
+    time_0: f32,
+    time_1: f32,
 }
 
 impl Camera {
@@ -22,6 +25,30 @@ impl Camera {
         aspect_ratio: f32,
         aperture: f32,
         focus_dist: f32,
+    ) -> Self {
+        Self::with_time(
+            look_from,
+            look_at,
+            vup,
+            vfov,
+            aspect_ratio,
+            aperture,
+            focus_dist,
+            0.0,
+            0.0,
+        )
+    }
+
+    pub fn with_time(
+        look_from: Vec3,
+        look_at: Vec3,
+        vup: Vec3,
+        vfov: f32, // vertical field-of-view in degrees
+        aspect_ratio: f32,
+        aperture: f32,
+        focus_dist: f32,
+        time_0: f32,
+        time_1: f32,
     ) -> Self {
         let theta = vfov.to_radians();
         let h = (theta / 2.0).tan();
@@ -47,6 +74,8 @@ impl Camera {
             v,
             w,
             lens_radius,
+            time_0,
+            time_1,
         }
     }
 
@@ -54,9 +83,10 @@ impl Camera {
         let rd = self.lens_radius * utilities::random_in_disk();
         let offset = self.u * rd.x + self.v * rd.y;
 
-        Ray::new(
+        Ray::with_time(
             self.origin + offset,
             self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin - offset,
+            utilities::random_float_between(self.time_0, self.time_1),
         )
     }
 }

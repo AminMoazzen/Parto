@@ -1,14 +1,20 @@
-use crate::{hittable::*, ray::Ray};
+use crate::{aabb::AABB, hittable::*, ray::Ray};
+use std::rc::Rc;
 
-#[derive(Default)]
 pub struct HittableList {
-    pub objects: Vec<Hittable>,
+    pub objects: Vec<Rc<Hittable>>,
 }
 
 impl HittableList {
-    pub fn new(object: Hittable) -> Self {
+    pub fn new(object: Rc<Hittable>) -> Self {
         Self {
             objects: vec![object],
+        }
+    }
+
+    pub fn empty() -> Self {
+        Self {
+            objects: Vec::new(),
         }
     }
 
@@ -16,7 +22,7 @@ impl HittableList {
         self.objects.clear();
     }
 
-    pub fn add(&mut self, object: Hittable) {
+    pub fn add(&mut self, object: Rc<Hittable>) {
         self.objects.push(object);
     }
 
@@ -32,5 +38,28 @@ impl HittableList {
         }
 
         temp_rec
+    }
+
+    pub fn bounding_box(&self, time0: f32, time1: f32) -> Option<AABB> {
+        if self.objects.is_empty() {
+            return None;
+        }
+
+        let mut output_box = Default::default();
+        let mut first_box = true;
+        for object in &self.objects {
+            if let Some(temp_box) = object.bounding_box(time0, time1) {
+                output_box = if first_box {
+                    temp_box
+                } else {
+                    AABB::surrounding_box(output_box, temp_box)
+                };
+                first_box = false;
+            } else {
+                return None;
+            }
+        }
+
+        Some(output_box)
     }
 }

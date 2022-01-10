@@ -1,5 +1,5 @@
-use crate::{hittable::*, material::Material, Ray};
-use cliffy::*;
+use crate::{aabb::AABB, hittable::HitRecord, material::Material, Ray};
+use cliffy::{Vec2, Vec3, Vector};
 use std::rc::Rc;
 
 pub struct Sphere {
@@ -47,7 +47,32 @@ impl Sphere {
         rec.point = r.at(rec.t);
         let outward_normal = (rec.point - self.center) / self.radius;
         rec.set_face_normal(r, &outward_normal);
+        rec.uv = Self::get_uv(&outward_normal);
 
         Some(rec)
+    }
+
+    pub fn bounding_box(&self, time0: f32, time1: f32) -> Option<AABB> {
+        let offset_by_radius = Vec3::uni(self.radius);
+        Some(AABB {
+            min: self.center - offset_by_radius,
+            max: self.center + offset_by_radius,
+        })
+    }
+
+    fn get_uv(p: &Vec3) -> Vec2 {
+        // p: a given point on the sphere of radius one, centered at the origin.
+        // u: returned value [0,1] of angle around the Y axis from X=-1.
+        // v: returned value [0,1] of angle from Y=-1 to Y=+1.
+        //     <1 0 0> yields <0.50 0.50>       <-1  0  0> yields <0.00 0.50>
+        //     <0 1 0> yields <0.50 1.00>       < 0 -1  0> yields <0.50 0.00>
+        //     <0 0 1> yields <0.25 0.50>       < 0  0 -1> yields <0.75 0.50>
+
+        use std::f32::consts::PI;
+
+        let theta = (-p.y).acos();
+        let phi = (-p.z).atan2(p.x) + PI;
+
+        Vec2::new(phi / (2.0 * PI), theta / PI)
     }
 }
