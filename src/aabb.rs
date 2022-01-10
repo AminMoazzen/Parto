@@ -20,9 +20,9 @@ impl AABB {
             box0.min.z.min(box1.min.z),
         );
         let max = Vec3::new(
-            box0.max.x.min(box1.max.x),
-            box0.max.y.min(box1.max.y),
-            box0.max.z.min(box1.max.z),
+            box0.max.x.max(box1.max.x),
+            box0.max.y.max(box1.max.y),
+            box0.max.z.max(box1.max.z),
         );
 
         Self { min, max }
@@ -32,7 +32,7 @@ impl AABB {
         for a in 0..3 {
             let inv_d = 1.0 / r.direction[a];
             let mut t0 = (self.min[a] - r.origin[a]) * inv_d;
-            let mut t1 = (self.min[a] - r.origin[a]) * inv_d;
+            let mut t1 = (self.max[a] - r.origin[a]) * inv_d;
             if inv_d < 0.0 {
                 std::mem::swap(&mut t0, &mut t1);
             }

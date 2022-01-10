@@ -53,7 +53,7 @@ impl Sphere {
     }
 
     pub fn bounding_box(&self, time0: f32, time1: f32) -> Option<AABB> {
-        let offset_by_radius = Vec3::new(self.radius, self.radius, self.radius);
+        let offset_by_radius = Vec3::uni(self.radius);
         Some(AABB {
             min: self.center - offset_by_radius,
             max: self.center + offset_by_radius,

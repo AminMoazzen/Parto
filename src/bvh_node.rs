@@ -1,8 +1,12 @@
+use cliffy::Vec3;
+
 use crate::{
     aabb::AABB,
+    dielectric::Dielectric,
     hittable::{HitRecord, Hittable},
     hittable_list::HittableList,
     ray::Ray,
+    sphere::Sphere,
     utilities,
 };
 use std::{cmp::Ordering, rc::Rc};
@@ -83,17 +87,21 @@ impl BVHNode {
 
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         if !self.bbox.hit(r, t_min, t_max) {
+            // println!("Miss");
             return None;
         }
 
         if let Some(l_rec) = self.left.hit(r, t_min, t_max) {
             if let Some(r_rec) = self.right.hit(r, t_min, l_rec.t) {
+                // println!("Hit");
                 return Some(r_rec);
             } else {
+                // println!("Hit");
                 return Some(l_rec);
             }
         } else {
             if let Some(r_rec) = self.right.hit(r, t_min, t_max) {
+                // println!("Hit");
                 return Some(r_rec);
             } else {
                 return None;

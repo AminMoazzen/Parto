@@ -37,8 +37,8 @@ impl ConstantMedium {
 
     pub fn hit(&self, r: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         // Print occasional samples when debugging. To enable, set enableDebug true.
-        let enableDebug = false;
-        let debugging = enableDebug && utilities::random_float() < 0.00001;
+        let enable_debug = false;
+        let debugging = enable_debug && utilities::random_float() < 0.00001;
 
         let mut rec1;
         if let Some(r) = self.boundary.hit(r, -f32::INFINITY, f32::INFINITY) {
